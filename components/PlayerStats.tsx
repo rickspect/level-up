@@ -1,14 +1,11 @@
 import type { PlayerStatsData } from "@/lib/types";
+import AnimatedXpBar from "@/components/AnimatedXpBar";
 
 type PlayerStatsProps = {
   player: PlayerStatsData;
 };
 
 export default function PlayerStats({ player }: PlayerStatsProps) {
-  const xpPercent = Math.round(
-    (player.currentXp / player.xpToNextLevel) * 100
-  );
-
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
       <div className="mb-4 grid grid-cols-2 gap-4">
@@ -38,12 +35,11 @@ export default function PlayerStats({ player }: PlayerStatsProps) {
             {player.currentXp} / {player.xpToNextLevel}
           </span>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-white/10">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-xp to-gold"
-            style={{ width: `${xpPercent}%` }}
-          />
-        </div>
+        <AnimatedXpBar
+          currentXp={player.currentXp}
+          xpToNextLevel={player.xpToNextLevel}
+          level={player.level}
+        />
       </div>
 
       <div className="flex items-center gap-2">

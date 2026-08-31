@@ -1,4 +1,5 @@
 import HomeQuestSection from "@/components/HomeQuestSection";
+import { getEquippedCosmeticsFromPlayer } from "@/lib/cosmetics";
 import {
   getDefaultPlayer,
   getTodayCompletedActivityTypes,
@@ -20,6 +21,7 @@ export default async function Home() {
         <HomeQuestSection
           initialPlayer={player}
           initialCompletedActivityTypes={completedActivityTypes}
+          initialEquipped={getEquippedCosmeticsFromPlayer(player)}
         />
       )}
     </div>

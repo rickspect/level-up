@@ -11,7 +11,10 @@ create table if not exists player (
   fitness integer not null default 0,
   tech integer not null default 0,
   evolution_energy integer not null default 0,
-  streak integer not null default 0
+  evolution_stage text not null default 'baby',
+  streak integer not null default 0,
+  equipped_aura_id text,
+  equipped_accessory_id text
 );
 
 create table if not exists activity_logs (
@@ -31,6 +34,9 @@ insert into player (id)
 values ('00000000-0000-0000-0000-000000000001')
 on conflict (id) do nothing;
 
+-- Migration for existing databases
+alter table player add column if not exists evolution_stage text not null default 'baby';
+
 alter table player enable row level security;
 alter table activity_logs enable row level security;
 
@@ -45,3 +51,62 @@ create policy "Allow all select on activity_logs"
 
 create policy "Allow all insert on activity_logs"
   on activity_logs for insert with check (true);
+
+create table if not exists rewards (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  price integer not null,
+  is_active boolean not null default true
+);
+
+create table if not exists reward_redemptions (
+  id uuid primary key default gen_random_uuid(),
+  reward_id uuid not null references rewards(id),
+  gold_spent integer not null,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists perfect_day_claims (
+  id uuid primary key default gen_random_uuid(),
+  xp_earned integer not null default 75,
+  gold_earned integer not null default 30,
+  energy_earned integer not null default 1,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists reward_redemptions_created_at_idx
+  on reward_redemptions (created_at desc);
+
+create index if not exists perfect_day_claims_created_at_idx
+  on perfect_day_claims (created_at desc);
+
+insert into rewards (name, price)
+select name, price
+from (
+  values
+    ('Gaming 1 Hour', 80),
+    ('Favorite Coffee', 100),
+    ('Favorite Meal', 200),
+    ('Movie Night', 250),
+    ('Buy New Game', 800)
+) as seed(name, price)
+where not exists (select 1 from rewards limit 1);
+
+alter table rewards enable row level security;
+alter table reward_redemptions enable row level security;
+alter table perfect_day_claims enable row level security;
+
+create policy "Allow all select on rewards"
+  on rewards for select using (true);
+
+create policy "Allow all select on reward_redemptions"
+  on reward_redemptions for select using (true);
+
+create policy "Allow all insert on reward_redemptions"
+  on reward_redemptions for insert with check (true);
+
+create policy "Allow all select on perfect_day_claims"
+  on perfect_day_claims for select using (true);
+
+create policy "Allow all insert on perfect_day_claims"
+  on perfect_day_claims for insert with check (true);

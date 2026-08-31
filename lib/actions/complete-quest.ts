@@ -1,10 +1,24 @@
 "use server";
 
 import { DEFAULT_PLAYER_ID } from "@/lib/constants";
-import { getStartOfTodayUtc } from "@/lib/player-utils";
+import { hasPerfectDayClaimToday } from "@/lib/db/player";
+import {
+  applyBonusRewards,
+  applyRewards,
+  getStartOfTodayUtc,
+  isPerfectDayComplete,
+  PERFECT_DAY_BONUS,
+} from "@/lib/player-utils";
 import { getQuestById } from "@/lib/quests";
 import { createServerClient } from "@/lib/supabase/server";
-import type { CompleteQuestResult, Player, QuestId } from "@/lib/types";
+import type {
+  ActivityType,
+  CompleteQuestResult,
+  LevelUpInfo,
+  PerfectDayInfo,
+  Player,
+  QuestId,
+} from "@/lib/types";
 
 export async function completeQuest(
   questId: QuestId
@@ -40,24 +54,23 @@ export async function completeQuest(
   }
 
   const currentPlayer = player as Player;
+  const startingLevel = currentPlayer.level;
   const { reward } = quest;
+  const { player: updatedPlayer } = applyRewards(currentPlayer, reward);
 
-  const updatedPlayer: Player = {
-    ...currentPlayer,
-    xp: currentPlayer.xp + reward.xp,
-    gold: currentPlayer.gold + reward.gold,
-    [reward.stat]: currentPlayer[reward.stat] + reward.statAmount,
-  };
+  const evolutionEnergy = currentPlayer.evolution_energy + 1;
 
   const { data: savedPlayer, error: updateError } = await supabase
     .from("player")
     .update({
+      level: updatedPlayer.level,
       xp: updatedPlayer.xp,
       gold: updatedPlayer.gold,
       knowledge: updatedPlayer.knowledge,
       faith: updatedPlayer.faith,
       fitness: updatedPlayer.fitness,
       tech: updatedPlayer.tech,
+      evolution_energy: evolutionEnergy,
     })
     .eq("id", DEFAULT_PLAYER_ID)
     .select("*")
@@ -79,10 +92,72 @@ export async function completeQuest(
     return { success: false, error: "Failed to log activity" };
   }
 
+  let finalPlayer = savedPlayer as Player;
+  let perfectDay: PerfectDayInfo | undefined;
+
+  const { data: todayLogs } = await supabase
+    .from("activity_logs")
+    .select("activity_type")
+    .gte("created_at", startOfToday);
+
+  const completedTypes = (todayLogs ?? []).map(
+    (row) => row.activity_type as ActivityType
+  );
+
+  if (isPerfectDayComplete(completedTypes)) {
+    const alreadyClaimed = await hasPerfectDayClaimToday();
+
+    if (!alreadyClaimed) {
+      const { player: bonusPlayer } = applyBonusRewards(
+        finalPlayer,
+        PERFECT_DAY_BONUS
+      );
+      const bonusEnergy = finalPlayer.evolution_energy + 1;
+
+      const { data: perfectDayPlayer, error: perfectDayError } = await supabase
+        .from("player")
+        .update({
+          level: bonusPlayer.level,
+          xp: bonusPlayer.xp,
+          gold: bonusPlayer.gold,
+          evolution_energy: bonusEnergy,
+        })
+        .eq("id", DEFAULT_PLAYER_ID)
+        .select("*")
+        .single();
+
+      if (perfectDayError || !perfectDayPlayer) {
+        return { success: false, error: "Failed to apply Perfect Day bonus" };
+      }
+
+      const { error: claimError } = await supabase
+        .from("perfect_day_claims")
+        .insert({
+          xp_earned: PERFECT_DAY_BONUS.xp,
+          gold_earned: PERFECT_DAY_BONUS.gold,
+          energy_earned: 1,
+        });
+
+      if (claimError) {
+        return { success: false, error: "Failed to record Perfect Day claim" };
+      }
+
+      finalPlayer = perfectDayPlayer as Player;
+      perfectDay = { xp: 75, gold: 30, energy: 1 };
+    }
+  }
+
+  const levelUp: LevelUpInfo | undefined =
+    finalPlayer.level > startingLevel
+      ? { fromLevel: startingLevel, toLevel: finalPlayer.level }
+      : undefined;
+
   return {
     success: true,
-    player: savedPlayer as Player,
+    player: finalPlayer,
     reward,
     activityType: quest.activityType,
+    ...(levelUp ? { levelUp } : {}),
+    ...(perfectDay ? { perfectDay } : {}),
   };
 }
