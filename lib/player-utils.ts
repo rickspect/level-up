@@ -89,3 +89,17 @@ export function getStartOfTodayUtc(): string {
   );
   return start.toISOString();
 }
+
+export function getStartOfWeekUtc(): string {
+  const now = new Date();
+  const day = now.getUTCDay();
+  const daysFromMonday = day === 0 ? 6 : day - 1;
+  const start = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() - daysFromMonday
+    )
+  );
+  return start.toISOString();
+}

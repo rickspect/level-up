@@ -152,7 +152,7 @@ export default function CosmeticsSection({
                       ? handleUnequip(cosmetic)
                       : handleEquip(cosmetic)
                   }
-                  className="shrink-0 rounded-lg border border-gold/40 bg-gold/10 px-3 py-1.5 text-xs font-semibold text-gold-light transition-colors hover:bg-gold/20 disabled:opacity-60"
+                  className="shrink-0 rounded-lg border border-gold/40 bg-gold/10 px-3 py-1.5 text-xs font-semibold text-gold-light transition-colors hover:bg-gold/20 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isLoading
                     ? "..."
@@ -173,7 +173,7 @@ export default function CosmeticsSection({
                     type="button"
                     disabled={isLoading}
                     onClick={() => handleEquip(cosmetic)}
-                    className="shrink-0 rounded-lg border border-border bg-white/5 px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-white/10 disabled:opacity-60"
+                    className="shrink-0 rounded-lg border border-border bg-white/5 px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isLoading ? "..." : "Reset"}
                   </button>

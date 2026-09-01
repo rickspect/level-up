@@ -110,3 +110,22 @@ create policy "Allow all select on perfect_day_claims"
 
 create policy "Allow all insert on perfect_day_claims"
   on perfect_day_claims for insert with check (true);
+
+create table if not exists coding_sessions (
+  id uuid primary key default gen_random_uuid(),
+  topic text not null,
+  duration_minutes integer not null,
+  learning_note text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists coding_sessions_created_at_idx
+  on coding_sessions (created_at desc);
+
+alter table coding_sessions enable row level security;
+
+create policy "Allow all select on coding_sessions"
+  on coding_sessions for select using (true);
+
+create policy "Allow all insert on coding_sessions"
+  on coding_sessions for insert with check (true);

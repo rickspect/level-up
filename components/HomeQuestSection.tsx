@@ -197,6 +197,7 @@ export default function HomeQuestSection({
           {dailyQuests.map((quest) => {
             const completed = completedActivityTypes.has(quest.activityType);
             const isLoading = loadingQuestId === quest.id;
+            const isCodingQuest = quest.id === "learn-coding";
 
             return (
               <QuestCard
@@ -206,7 +207,17 @@ export default function HomeQuestSection({
                 disabled={completed || isLoading}
                 loading={isLoading}
                 justCompleted={justCompletedQuestId === quest.id}
-                onComplete={() => handleCompleteQuest(quest.id)}
+                href={isCodingQuest && !completed ? "/quests" : undefined}
+                subtitle={
+                  isCodingQuest && !completed
+                    ? "Start a coding session"
+                    : undefined
+                }
+                onComplete={
+                  isCodingQuest
+                    ? undefined
+                    : () => handleCompleteQuest(quest.id)
+                }
               />
             );
           })}

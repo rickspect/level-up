@@ -89,7 +89,12 @@ export default function RewardShop({
           Available Rewards
         </h2>
         <div className="flex flex-col gap-2">
-          {initialRewards.map((reward) => {
+          {initialRewards.length === 0 ? (
+            <p className="rounded-xl border border-border bg-surface px-4 py-6 text-center text-sm text-muted">
+              No rewards available right now.
+            </p>
+          ) : (
+            initialRewards.map((reward) => {
             const canAfford = player.gold >= reward.price;
             const isLoading = loadingRewardId === reward.id;
 
@@ -108,13 +113,14 @@ export default function RewardShop({
                   type="button"
                   onClick={() => handleRedeem(reward.id)}
                   disabled={!canAfford || isLoading}
-                  className="shrink-0 rounded-lg border border-gold/40 bg-gold/10 px-3 py-1.5 text-xs font-semibold text-gold-light transition-colors hover:bg-gold/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="shrink-0 rounded-lg border border-gold/40 bg-gold/10 px-3 py-1.5 text-xs font-semibold text-gold-light transition-colors hover:bg-gold/20 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isLoading ? "Redeeming..." : "Redeem"}
                 </button>
               </div>
             );
-          })}
+          })
+          )}
         </div>
       </section>
 
@@ -123,7 +129,7 @@ export default function RewardShop({
           Redemption History
         </h2>
         {redemptions.length === 0 ? (
-          <p className="rounded-xl border border-white/10 bg-surface-elevated px-4 py-6 text-center text-sm text-muted">
+          <p className="rounded-xl border border-border bg-surface px-4 py-6 text-center text-sm text-muted">
             No redemptions yet. Complete quests to earn gold!
           </p>
         ) : (

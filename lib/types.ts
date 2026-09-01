@@ -176,3 +176,32 @@ export type CompleteQuestResult =
       success: false;
       error: string;
     };
+
+export type CodingSession = {
+  id: string;
+  topic: string;
+  duration_minutes: number;
+  learning_note: string;
+  created_at: string;
+};
+
+export type CodingWeekStats = {
+  totalSessions: number;
+  totalMinutes: number;
+  techXpEarned: number;
+};
+
+export type FinishCodingSessionResult =
+  | {
+      success: true;
+      session: CodingSession;
+      questRewarded: boolean;
+      player?: Player;
+      reward?: QuestReward;
+      levelUp?: LevelUpInfo;
+      perfectDay?: PerfectDayInfo;
+    }
+  | {
+      success: false;
+      error: string;
+    };
