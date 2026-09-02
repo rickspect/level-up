@@ -90,6 +90,25 @@ export function getStartOfTodayUtc(): string {
   return start.toISOString();
 }
 
+export function getStartOfYesterdayUtc(): string {
+  const now = new Date();
+  const start = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1)
+  );
+  return start.toISOString();
+}
+
+export function computeStreakAfterFirstQuestOfDay(
+  currentStreak: number,
+  hadActivityYesterday: boolean
+): number {
+  if (hadActivityYesterday) {
+    return currentStreak + 1;
+  }
+
+  return 1;
+}
+
 export function getStartOfWeekUtc(): string {
   const now = new Date();
   const day = now.getUTCDay();

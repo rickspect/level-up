@@ -5,7 +5,9 @@ import { hasPerfectDayClaimToday } from "@/lib/db/player";
 import {
   applyBonusRewards,
   applyRewards,
+  computeStreakAfterFirstQuestOfDay,
   getStartOfTodayUtc,
+  getStartOfYesterdayUtc,
   isPerfectDayComplete,
   PERFECT_DAY_BONUS,
 } from "@/lib/player-utils";
@@ -68,6 +70,31 @@ export async function applyQuestReward(
 
   const evolutionEnergy = currentPlayer.evolution_energy + 1;
 
+  const { data: todayLogsBefore } = await supabase
+    .from("activity_logs")
+    .select("id")
+    .gte("created_at", startOfToday);
+
+  const isFirstQuestToday = (todayLogsBefore ?? []).length === 0;
+  let newStreak = currentPlayer.streak;
+
+  if (isFirstQuestToday) {
+    const { data: yesterdayLogs } = await supabase
+      .from("activity_logs")
+      .select("id")
+      .gte("created_at", getStartOfYesterdayUtc())
+      .lt("created_at", startOfToday)
+      .limit(1);
+
+    const hadActivityYesterday = (yesterdayLogs ?? []).length > 0;
+    newStreak = computeStreakAfterFirstQuestOfDay(
+      currentPlayer.streak,
+      hadActivityYesterday
+    );
+  } else if (currentPlayer.streak === 0 && (todayLogsBefore ?? []).length > 0) {
+    newStreak = 1;
+  }
+
   const { data: savedPlayer, error: updateError } = await supabase
     .from("player")
     .update({
@@ -79,6 +106,7 @@ export async function applyQuestReward(
       fitness: updatedPlayer.fitness,
       tech: updatedPlayer.tech,
       evolution_energy: evolutionEnergy,
+      streak: newStreak,
     })
     .eq("id", DEFAULT_PLAYER_ID)
     .select("*")
