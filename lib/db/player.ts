@@ -1,5 +1,5 @@
 import { DEFAULT_PLAYER_ID } from "@/lib/constants";
-import { getStartOfTodayUtc } from "@/lib/player-utils";
+import { getTodayUtcDate, getStartOfTodayUtc } from "@/lib/player-utils";
 import { createServerClient } from "@/lib/supabase/server";
 import { getEquippedCosmeticsFromPlayer } from "@/lib/cosmetics";
 import type { ActivityType, EquippedCosmetics, Player } from "@/lib/types";
@@ -24,12 +24,13 @@ export async function getTodayCompletedActivityTypes(): Promise<
   ActivityType[]
 > {
   const supabase = createServerClient();
-  const startOfToday = getStartOfTodayUtc();
+  const today = getTodayUtcDate();
 
   const { data, error } = await supabase
     .from("activity_logs")
     .select("activity_type")
-    .gte("created_at", startOfToday);
+    .eq("user_id", DEFAULT_PLAYER_ID)
+    .eq("activity_date", today);
 
   if (error || !data) {
     return [];

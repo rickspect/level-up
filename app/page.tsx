@@ -2,6 +2,7 @@ import HomeQuestSection from "@/components/HomeQuestSection";
 import PageTransition from "@/components/PageTransition";
 import EmptyState from "@/components/EmptyState";
 import { getEquippedCosmeticsFromPlayer } from "@/lib/cosmetics";
+import { getTodayActivitySummaries } from "@/lib/db/activity-logs";
 import {
   getDefaultPlayer,
   getTodayCompletedActivityTypes,
@@ -9,7 +10,10 @@ import {
 
 export default async function Home() {
   const player = await getDefaultPlayer();
-  const completedActivityTypes = await getTodayCompletedActivityTypes();
+  const [completedActivityTypes, todaySummaries] = await Promise.all([
+    getTodayCompletedActivityTypes(),
+    getTodayActivitySummaries(),
+  ]);
 
   return (
     <PageTransition>
@@ -20,6 +24,7 @@ export default async function Home() {
           <HomeQuestSection
             initialPlayer={player}
             initialCompletedActivityTypes={completedActivityTypes}
+            initialTodaySummaries={todaySummaries}
             initialEquipped={getEquippedCosmeticsFromPlayer(player)}
           />
         )}

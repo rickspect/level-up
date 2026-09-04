@@ -53,7 +53,7 @@ export async function finishCodingSession(
     return { success: false, error: "Coding quest not found" };
   }
 
-  const rewardResult = await applyQuestReward(quest, durationMinutes);
+  const rewardResult = await applyQuestReward(quest, { durationMinutes });
 
   if (!rewardResult.success) {
     if (rewardResult.error === "Already completed today") {

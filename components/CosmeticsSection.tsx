@@ -2,13 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { motion } from "motion/react";
 import { equipCosmetic, unequipCosmetic } from "@/lib/actions/equip-cosmetic";
 import { getCosmeticsWithEquipped } from "@/lib/cosmetics";
-import type { Cosmetic, EquippedCosmetics } from "@/lib/types";
+import type { Cosmetic, EquippedCosmetics, EvolutionStage } from "@/lib/types";
 import Avatar from "@/components/Avatar";
 
 type CosmeticsSectionProps = {
   playerLevel: number;
+  playerStage: EvolutionStage;
   initialEquipped: EquippedCosmetics;
 };
 
@@ -41,14 +43,21 @@ function getPreviewEquipped(
 
 export default function CosmeticsSection({
   playerLevel,
+  playerStage,
   initialEquipped,
 }: CosmeticsSectionProps) {
   const router = useRouter();
   const [equipped, setEquipped] = useState(initialEquipped);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [popId, setPopId] = useState<string | null>(null);
 
   const cosmetics = getCosmeticsWithEquipped(equipped);
+
+  function triggerPop(cosmeticId: string) {
+    setPopId(cosmeticId);
+    window.setTimeout(() => setPopId(null), 400);
+  }
 
   async function handleEquip(cosmetic: Cosmetic) {
     setLoadingId(cosmetic.id);
@@ -64,6 +73,7 @@ export default function CosmeticsSection({
     }
 
     setEquipped(result.equipped);
+    triggerPop(cosmetic.id);
     router.refresh();
   }
 
@@ -85,6 +95,7 @@ export default function CosmeticsSection({
     }
 
     setEquipped(result.equipped);
+    triggerPop(cosmetic.id);
     router.refresh();
   }
 
@@ -108,6 +119,7 @@ export default function CosmeticsSection({
           const locked = playerLevel < cosmetic.unlock_level;
           const isLoading = loadingId === cosmetic.id;
           const previewEquipped = getPreviewEquipped(cosmetic, equipped);
+          const shouldPop = popId === cosmetic.id;
 
           return (
             <div
@@ -116,11 +128,24 @@ export default function CosmeticsSection({
                 locked ? "border-border opacity-60" : "border-border"
               } ${cosmetic.equipped ? "border-gold/40" : ""}`}
             >
-              <Avatar
-                size="md"
-                equipped={previewEquipped}
-                animate={false}
-              />
+              <motion.div
+                key={`${cosmetic.id}-${cosmetic.equipped}`}
+                className={`shrink-0 scale-110 rounded-full ${
+                  cosmetic.equipped ? "ring-1 ring-gold/30" : ""
+                }`}
+                animate={
+                  shouldPop ? { scale: [1.1, 1.22, 1.1] } : { scale: 1.1 }
+                }
+                transition={{ duration: 0.35, ease: "easeOut" }}
+              >
+                <Avatar
+                  size="md"
+                  stage={playerStage}
+                  equipped={previewEquipped}
+                  glow={cosmetic.category !== "default"}
+                  animate={false}
+                />
+              </motion.div>
 
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <div className="flex items-center gap-2">

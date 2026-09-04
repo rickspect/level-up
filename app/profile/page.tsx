@@ -35,6 +35,7 @@ export default async function ProfilePage() {
 
         <CosmeticsSection
           playerLevel={player.level}
+          playerStage={player.evolution_stage}
           initialEquipped={equipped}
         />
       </div>

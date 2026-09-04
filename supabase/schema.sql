@@ -19,16 +19,44 @@ create table if not exists player (
 
 create table if not exists activity_logs (
   id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default '00000000-0000-0000-0000-000000000001',
   activity_type text not null,
+  activity_date date not null,
+  title text,
+  reference text,
+  reflection text,
   duration_minutes integer,
   xp_earned integer not null,
   gold_earned integer not null,
   stat_earned text not null,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
+
+create unique index if not exists activity_logs_user_type_date_uidx
+  on activity_logs (user_id, activity_type, activity_date);
+
+create index if not exists activity_logs_user_date_idx
+  on activity_logs (user_id, activity_date);
+
+create index if not exists activity_logs_user_type_date_idx
+  on activity_logs (user_id, activity_type, activity_date);
 
 create index if not exists activity_logs_type_created_at_idx
   on activity_logs (activity_type, created_at desc);
+
+create table if not exists workout_exercises (
+  id uuid primary key default gen_random_uuid(),
+  activity_log_id uuid not null references activity_logs(id) on delete cascade,
+  exercise_name text not null,
+  sets integer not null,
+  reps integer not null,
+  weight numeric,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists workout_exercises_log_id_idx
+  on workout_exercises (activity_log_id);
 
 insert into player (id)
 values ('00000000-0000-0000-0000-000000000001')
@@ -51,6 +79,23 @@ create policy "Allow all select on activity_logs"
 
 create policy "Allow all insert on activity_logs"
   on activity_logs for insert with check (true);
+
+create policy "Allow all update on activity_logs"
+  on activity_logs for update using (true);
+
+alter table workout_exercises enable row level security;
+
+create policy "Allow all select on workout_exercises"
+  on workout_exercises for select using (true);
+
+create policy "Allow all insert on workout_exercises"
+  on workout_exercises for insert with check (true);
+
+create policy "Allow all update on workout_exercises"
+  on workout_exercises for update using (true);
+
+create policy "Allow all delete on workout_exercises"
+  on workout_exercises for delete using (true);
 
 create table if not exists rewards (
   id uuid primary key default gen_random_uuid(),

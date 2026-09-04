@@ -78,21 +78,105 @@ export type EquipCosmeticResult =
       error: string;
     };
 
-export type ActivityLog = {
-  id: string;
-  activity_type: string;
-  duration_minutes: number | null;
-  xp_earned: number;
-  gold_earned: number;
-  stat_earned: string;
-  created_at: string;
-};
-
 export type QuestId = "read-book" | "read-bible" | "workout" | "learn-coding";
 
 export type ActivityType = "book" | "bible" | "workout" | "coding";
 
 export type StatKey = "knowledge" | "faith" | "fitness" | "tech";
+
+export type ActivityLog = {
+  id: string;
+  user_id: string;
+  activity_type: ActivityType;
+  activity_date: string;
+  title: string | null;
+  reference: string | null;
+  reflection: string | null;
+  duration_minutes: number | null;
+  xp_earned: number;
+  gold_earned: number;
+  stat_earned: string;
+  created_at: string;
+  updated_at: string;
+  exercises?: WorkoutExercise[];
+};
+
+export type WorkoutExercise = {
+  id: string;
+  activity_log_id: string;
+  exercise_name: string;
+  sets: number;
+  reps: number;
+  weight: number | null;
+  created_at: string;
+};
+
+export type WorkoutExerciseInput = {
+  name: string;
+  sets: number;
+  reps: number;
+  weight?: number | null;
+};
+
+export type TodayActivitySummary = {
+  activityType: ActivityType;
+  title: string;
+  reference: string | null;
+  reflection: string | null;
+  exercises?: WorkoutExercise[];
+};
+
+export type WeeklyProgressStats = {
+  readingDays: number;
+  bibleDays: number;
+  workoutSessions: number;
+  codingSessions: number;
+  currentStreak: number;
+};
+
+export type RecentActivityItem = {
+  id: string;
+  activityType: ActivityType;
+  title: string;
+  reference: string | null;
+  reflection: string | null;
+  exercises?: WorkoutExercise[];
+  createdAt: string;
+  activityDate: string;
+};
+
+export type ActivitySummary = {
+  title: string;
+  subtitle: string;
+  reflection?: string | null;
+};
+
+export type SaveActivityResult =
+  | {
+      success: true;
+      player: Player;
+      reward: QuestReward;
+      activityType: ActivityType;
+      activitySummary: ActivitySummary;
+      levelUp?: LevelUpInfo;
+      perfectDay?: PerfectDayInfo;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+export type UpdateActivityResult =
+  | {
+      success: true;
+      activitySummary: ActivitySummary;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+export type ProgressCategory = "book" | "bible" | "workout" | "coding";
 
 export type QuestReward = {
   xp: number;

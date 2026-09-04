@@ -11,6 +11,8 @@ type QuestCardProps = {
   justCompleted?: boolean;
   href?: string;
   subtitle?: string;
+  summary?: string;
+  showChevron?: boolean;
   onComplete?: () => void;
 };
 
@@ -20,9 +22,17 @@ function QuestCardContent({
   loading = false,
   justCompleted = false,
   subtitle,
+  summary,
+  showChevron = false,
 }: Pick<
   QuestCardProps,
-  "title" | "completed" | "loading" | "justCompleted" | "subtitle"
+  | "title"
+  | "completed"
+  | "loading"
+  | "justCompleted"
+  | "subtitle"
+  | "summary"
+  | "showChevron"
 >) {
   return (
     <>
@@ -57,18 +67,38 @@ function QuestCardContent({
       <div className="min-w-0 flex-1">
         <motion.span
           className={`text-sm font-medium ${
-            completed ? "text-muted line-through" : "text-foreground"
+            completed ? "text-foreground" : "text-foreground"
           }`}
           initial={justCompleted ? { opacity: 0.5 } : false}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
-          {loading ? "Completing..." : title}
+          {loading ? "Saving..." : title}
         </motion.span>
-        {subtitle && !completed && (
-          <p className="text-xs text-muted">{subtitle}</p>
+        {completed && summary ? (
+          <p className="truncate text-xs text-muted">{summary}</p>
+        ) : (
+          subtitle && (
+            <p className="text-xs text-muted">{subtitle}</p>
+          )
         )}
       </div>
+      {showChevron && !completed && (
+        <svg
+          viewBox="0 0 20 20"
+          fill="none"
+          className="h-4 w-4 shrink-0 text-muted"
+          aria-hidden="true"
+        >
+          <path
+            d="M7.5 5l5 5-5 5"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
     </>
   );
 }
@@ -81,11 +111,13 @@ export default function QuestCard({
   justCompleted = false,
   href,
   subtitle,
+  summary,
+  showChevron = false,
   onComplete,
 }: QuestCardProps) {
-  const isLink = Boolean(href) && !completed;
+  const isLink = Boolean(href) && !onComplete;
   const isInteractive =
-    !completed && !disabled && !loading && (onComplete || isLink);
+    !disabled && !loading && (onComplete || isLink);
 
   const className = `flex w-full items-center gap-3 rounded-xl border bg-surface px-4 py-3 text-left transition-colors ${
     justCompleted || completed ? "border-xp/60" : "border-border"
@@ -102,6 +134,8 @@ export default function QuestCard({
           loading={loading}
           justCompleted={justCompleted}
           subtitle={subtitle}
+          summary={summary}
+          showChevron={showChevron}
         />
       </Link>
     );
@@ -120,6 +154,8 @@ export default function QuestCard({
         loading={loading}
         justCompleted={justCompleted}
         subtitle={subtitle}
+        summary={summary}
+        showChevron={showChevron}
       />
     </motion.button>
   );

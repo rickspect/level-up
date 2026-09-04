@@ -37,3 +37,24 @@ export function formatRewardSummary(quest: Quest): string {
     reward.stat.charAt(0).toUpperCase() + reward.stat.slice(1);
   return `+${reward.xp} XP, +${reward.gold} Gold, ${statLabel} +${reward.statAmount}`;
 }
+
+export const QUEST_FORM_META: Record<
+  Exclude<QuestId, "learn-coding">,
+  { icon: string; successTitle: string; successSubtitle: string }
+> = {
+  "read-book": {
+    icon: "📚",
+    successTitle: "Book Logged!",
+    successSubtitle: "Great job! Keep going!",
+  },
+  "read-bible": {
+    icon: "📖",
+    successTitle: "Passage Logged!",
+    successSubtitle: "Great job! Keep going!",
+  },
+  workout: {
+    icon: "💪",
+    successTitle: "Workout Logged!",
+    successSubtitle: "Great job! Keep going!",
+  },
+};

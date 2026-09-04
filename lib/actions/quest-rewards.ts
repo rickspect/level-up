@@ -8,6 +8,7 @@ import {
   computeStreakAfterFirstQuestOfDay,
   getStartOfTodayUtc,
   getStartOfYesterdayUtc,
+  getTodayUtcDate,
   isPerfectDayComplete,
   PERFECT_DAY_BONUS,
 } from "@/lib/player-utils";
@@ -21,12 +22,20 @@ import type {
   QuestReward,
 } from "@/lib/types";
 
+export type ApplyQuestRewardOptions = {
+  durationMinutes?: number | null;
+  title?: string | null;
+  reference?: string | null;
+  reflection?: string | null;
+};
+
 export type ApplyQuestRewardResult =
   | {
       success: true;
       player: Player;
       reward: QuestReward;
       activityType: ActivityType;
+      activityLogId: string;
       levelUp?: LevelUpInfo;
       perfectDay?: PerfectDayInfo;
     }
@@ -37,16 +46,18 @@ export type ApplyQuestRewardResult =
 
 export async function applyQuestReward(
   quest: Quest,
-  durationMinutes: number | null = null
+  options: ApplyQuestRewardOptions = {}
 ): Promise<ApplyQuestRewardResult> {
   const supabase = createServerClient();
   const startOfToday = getStartOfTodayUtc();
+  const today = getTodayUtcDate();
 
   const { data: existingLog } = await supabase
     .from("activity_logs")
     .select("id")
+    .eq("user_id", DEFAULT_PLAYER_ID)
     .eq("activity_type", quest.activityType)
-    .gte("created_at", startOfToday)
+    .eq("activity_date", today)
     .maybeSingle();
 
   if (existingLog) {
@@ -73,7 +84,8 @@ export async function applyQuestReward(
   const { data: todayLogsBefore } = await supabase
     .from("activity_logs")
     .select("id")
-    .gte("created_at", startOfToday);
+    .eq("user_id", DEFAULT_PLAYER_ID)
+    .eq("activity_date", today);
 
   const isFirstQuestToday = (todayLogsBefore ?? []).length === 0;
   let newStreak = currentPlayer.streak;
@@ -116,15 +128,24 @@ export async function applyQuestReward(
     return { success: false, error: "Failed to update player" };
   }
 
-  const { error: logError } = await supabase.from("activity_logs").insert({
-    activity_type: quest.activityType,
-    duration_minutes: durationMinutes,
-    xp_earned: reward.xp,
-    gold_earned: reward.gold,
-    stat_earned: reward.stat,
-  });
+  const { data: insertedLog, error: logError } = await supabase
+    .from("activity_logs")
+    .insert({
+      user_id: DEFAULT_PLAYER_ID,
+      activity_type: quest.activityType,
+      activity_date: today,
+      title: options.title ?? null,
+      reference: options.reference ?? null,
+      reflection: options.reflection ?? null,
+      duration_minutes: options.durationMinutes ?? null,
+      xp_earned: reward.xp,
+      gold_earned: reward.gold,
+      stat_earned: reward.stat,
+    })
+    .select("id")
+    .single();
 
-  if (logError) {
+  if (logError || !insertedLog) {
     return { success: false, error: "Failed to log activity" };
   }
 
@@ -134,7 +155,8 @@ export async function applyQuestReward(
   const { data: todayLogs } = await supabase
     .from("activity_logs")
     .select("activity_type")
-    .gte("created_at", startOfToday);
+    .eq("user_id", DEFAULT_PLAYER_ID)
+    .eq("activity_date", today);
 
   const completedTypes = (todayLogs ?? []).map(
     (row) => row.activity_type as ActivityType
@@ -193,6 +215,7 @@ export async function applyQuestReward(
     player: finalPlayer,
     reward,
     activityType: quest.activityType,
+    activityLogId: insertedLog.id,
     ...(levelUp ? { levelUp } : {}),
     ...(perfectDay ? { perfectDay } : {}),
   };
