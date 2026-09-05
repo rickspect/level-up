@@ -7,6 +7,8 @@ import {
   getWeeklyProgressStats,
 } from "@/lib/db/activity-logs";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProgressPage() {
   const [stats, recentActivities] = await Promise.all([
     getWeeklyProgressStats(),

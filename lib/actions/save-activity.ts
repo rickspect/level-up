@@ -1,6 +1,7 @@
 "use server";
 
 import { applyQuestReward } from "@/lib/actions/quest-rewards";
+import { revalidateActivityPages } from "@/lib/actions/revalidate-progress";
 import {
   buildBibleSummary,
   buildBookSummary,
@@ -65,12 +66,14 @@ export async function saveBookActivity(input: {
     return { success: false, error: result.error };
   }
 
+  revalidateActivityPages("book");
+
   return {
     success: true,
     player: result.player,
     reward: result.reward,
     activityType: result.activityType,
-    activitySummary: buildBookSummary(title, reference),
+    activitySummary: buildBookSummary(title, reference, reflection),
     ...(result.levelUp ? { levelUp: result.levelUp } : {}),
     ...(result.perfectDay ? { perfectDay: result.perfectDay } : {}),
   };
@@ -105,6 +108,8 @@ export async function saveBibleActivity(input: {
   if (!result.success) {
     return { success: false, error: result.error };
   }
+
+  revalidateActivityPages("bible");
 
   return {
     success: true,
@@ -167,6 +172,8 @@ export async function saveWorkoutActivity(input: {
   if (exerciseError) {
     return { success: false, error: exerciseError };
   }
+
+  revalidateActivityPages("workout");
 
   return {
     success: true,

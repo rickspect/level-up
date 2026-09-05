@@ -38,22 +38,37 @@ export function formatRewardSummary(quest: Quest): string {
   return `+${reward.xp} XP, +${reward.gold} Gold, ${statLabel} +${reward.statAmount}`;
 }
 
+export const QUEST_INCOMPLETE_SUBTITLES: Record<QuestId, string> = {
+  "read-book": "Log your reading",
+  "read-bible": "Log your passage",
+  workout: "Log your activity",
+  "learn-coding": "Start a coding session",
+};
+
 export const QUEST_FORM_META: Record<
   Exclude<QuestId, "learn-coding">,
-  { icon: string; successTitle: string; successSubtitle: string }
+  {
+    icon: string;
+    description: string;
+    successTitle: string;
+    successSubtitle: string;
+  }
 > = {
   "read-book": {
     icon: "📚",
+    description: "Capture what you learned",
     successTitle: "Book Logged!",
     successSubtitle: "Great job! Keep going!",
   },
   "read-bible": {
     icon: "📖",
+    description: "Log your passage",
     successTitle: "Passage Logged!",
     successSubtitle: "Great job! Keep going!",
   },
   workout: {
     icon: "💪",
+    description: "Log your activity",
     successTitle: "Workout Logged!",
     successSubtitle: "Great job! Keep going!",
   },

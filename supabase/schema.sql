@@ -81,7 +81,7 @@ create policy "Allow all insert on activity_logs"
   on activity_logs for insert with check (true);
 
 create policy "Allow all update on activity_logs"
-  on activity_logs for update using (true);
+  on activity_logs for update using (true) with check (true);
 
 alter table workout_exercises enable row level security;
 

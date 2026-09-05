@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { loadMoreActivities } from "@/lib/actions/update-activity";
 import {
   ACTIVITY_ICONS,
@@ -74,6 +74,11 @@ export default function CategoryHistorySection({
   const [hasMore, setHasMore] = useState(
     initialActivities.length === pageSize
   );
+
+  useEffect(() => {
+    setActivities(initialActivities);
+    setHasMore(initialActivities.length === pageSize);
+  }, [category, initialActivities, pageSize]);
 
   async function handleLoadMore() {
     setLoading(true);

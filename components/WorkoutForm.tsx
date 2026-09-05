@@ -5,6 +5,7 @@ import {
   inputClassName,
   primaryButtonClassName,
   textareaClassName,
+  formCardClassName,
 } from "@/components/QuestFormSheet";
 import type { WorkoutExerciseInput } from "@/lib/types";
 
@@ -119,12 +120,13 @@ export default function WorkoutForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3">
-        {rows.map((row, index) => (
-          <div
-            key={row.id}
-            className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-3"
-          >
+      <div className={`flex flex-col gap-4 ${formCardClassName}`}>
+        <div className="flex flex-col gap-3">
+          {rows.map((row, index) => (
+            <div
+              key={row.id}
+              className="flex flex-col gap-3 rounded-xl border border-border bg-background p-3"
+            >
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-semibold uppercase tracking-wider text-muted">
                 Exercise {index + 1}
@@ -190,43 +192,44 @@ export default function WorkoutForm({
             </div>
           </div>
         ))}
-      </div>
+        </div>
 
-      <button
-        type="button"
-        onClick={addRow}
-        disabled={saving}
-        className="rounded-lg border border-dashed border-border px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-gold/40 hover:text-gold-light disabled:opacity-60"
-      >
-        + Add Exercise
-      </button>
-
-      <div className="flex flex-col gap-2">
-        <label htmlFor="workout-notes" className="text-sm font-medium">
-          Notes
-        </label>
-        <textarea
-          id="workout-notes"
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
+        <button
+          type="button"
+          onClick={addRow}
           disabled={saving}
-          rows={2}
-          placeholder="Optional session notes..."
-          className={textareaClassName}
-        />
-      </div>
+          className="rounded-lg border border-dashed border-border px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-gold/40 hover:text-gold-light disabled:opacity-60"
+        >
+          + Add Exercise
+        </button>
 
-      <button
-        type="submit"
-        disabled={saving || rows.every((row) => !row.name.trim())}
-        className={primaryButtonClassName}
-      >
-        {saving
-          ? "Saving..."
-          : mode === "create"
-            ? "Complete Quest"
-            : "Save Changes"}
-      </button>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="workout-notes" className="text-sm font-medium">
+            Notes
+          </label>
+          <textarea
+            id="workout-notes"
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            disabled={saving}
+            rows={2}
+            placeholder="Optional session notes..."
+            className={textareaClassName}
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={saving || rows.every((row) => !row.name.trim())}
+          className={primaryButtonClassName}
+        >
+          {saving
+            ? "Saving..."
+            : mode === "create"
+              ? "Complete Quest"
+              : "Save Changes"}
+        </button>
+      </div>
     </form>
   );
 }

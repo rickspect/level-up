@@ -10,6 +10,7 @@ import type {
   Player,
 } from "@/lib/types";
 import CodingThisWeek from "@/components/CodingThisWeek";
+import { useDailyQuest } from "@/components/DailyQuestProvider";
 import FloatingReward from "@/components/FloatingReward";
 import LevelUpOverlay from "@/components/LevelUpOverlay";
 import PerfectDayOverlay from "@/components/PerfectDayOverlay";
@@ -42,6 +43,7 @@ export default function CodingSessionSection({
   initialPlayer,
 }: CodingSessionSectionProps) {
   const router = useRouter();
+  const { markCompleted } = useDailyQuest();
   const [phase, setPhase] = useState<SessionPhase>("idle");
   const [topic, setTopic] = useState("");
   const [goalMinutes, setGoalMinutes] = useState<number>(25);
@@ -165,6 +167,8 @@ export default function CodingSessionSection({
       return;
     }
 
+    markCompleted("coding", "learn-coding");
+
     const rewardId = Date.now();
     const newFloatingRewards: FloatingRewardItem[] = [
       { id: `${rewardId}-xp`, type: "xp", amount: result.reward!.xp },
@@ -207,7 +211,7 @@ export default function CodingSessionSection({
   const inputsLocked = isRunning || isFinishing || saving;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div id="coding-session" className="flex flex-col gap-6">
       <div>
         <h1 className="text-xl font-semibold">Coding Session</h1>
         <p className="mt-1 text-sm text-muted">

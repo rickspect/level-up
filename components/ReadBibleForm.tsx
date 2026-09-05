@@ -5,6 +5,7 @@ import {
   inputClassName,
   primaryButtonClassName,
   textareaClassName,
+  formCardClassName,
 } from "@/components/QuestFormSheet";
 
 type ReadBibleFormProps = {
@@ -34,52 +35,54 @@ export default function ReadBibleForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <label htmlFor="bible-passage" className="text-sm font-medium">
-          Passage <span className="text-xp">*</span>
-        </label>
-        <input
-          id="bible-passage"
-          type="text"
-          value={passage}
-          onChange={(event) => setPassage(event.target.value)}
-          disabled={saving}
-          placeholder="e.g. Matthew 5:1-12"
-          className={inputClassName}
-        />
-      </div>
+      <div className={`flex flex-col gap-4 ${formCardClassName}`}>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="bible-passage" className="text-sm font-medium">
+            Passage <span className="text-xp">*</span>
+          </label>
+          <input
+            id="bible-passage"
+            type="text"
+            value={passage}
+            onChange={(event) => setPassage(event.target.value)}
+            disabled={saving}
+            placeholder="e.g. Matthew 5:1-12"
+            className={inputClassName}
+          />
+        </div>
 
-      <div className="flex flex-col gap-2">
-        <label htmlFor="bible-reflection" className="text-sm font-medium">
-          Reflection / What I Learned <span className="text-xp">*</span>
-        </label>
-        <textarea
-          id="bible-reflection"
-          value={reflection}
-          onChange={(event) =>
-            setReflection(event.target.value.slice(0, MAX_REFLECTION_LENGTH))
-          }
-          disabled={saving}
-          rows={4}
-          placeholder="What can you learn or apply from this passage?"
-          className={textareaClassName}
-        />
-        <span className="text-right text-xs text-muted">
-          {reflection.length}/{MAX_REFLECTION_LENGTH}
-        </span>
-      </div>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="bible-reflection" className="text-sm font-medium">
+            Reflection / What I Learned <span className="text-xp">*</span>
+          </label>
+          <textarea
+            id="bible-reflection"
+            value={reflection}
+            onChange={(event) =>
+              setReflection(event.target.value.slice(0, MAX_REFLECTION_LENGTH))
+            }
+            disabled={saving}
+            rows={4}
+            placeholder="What can you learn or apply from this passage?"
+            className={textareaClassName}
+          />
+          <span className="text-right text-xs text-muted">
+            {reflection.length}/{MAX_REFLECTION_LENGTH}
+          </span>
+        </div>
 
-      <button
-        type="submit"
-        disabled={saving || !passage.trim() || !reflection.trim()}
-        className={primaryButtonClassName}
-      >
-        {saving
-          ? "Saving..."
-          : mode === "create"
-            ? "Complete Quest"
-            : "Save Changes"}
-      </button>
+        <button
+          type="submit"
+          disabled={saving || !passage.trim() || !reflection.trim()}
+          className={primaryButtonClassName}
+        >
+          {saving
+            ? "Saving..."
+            : mode === "create"
+              ? "Complete Quest"
+              : "Save Changes"}
+        </button>
+      </div>
     </form>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import BottomNav from "@/components/BottomNav";
+import DailyQuestShell from "@/components/DailyQuestShell";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,7 +27,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-dvh bg-background text-foreground">
         <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-          <main className="flex-1 overflow-y-auto pb-20">{children}</main>
+          <DailyQuestShell>
+            <main className="flex-1 overflow-y-auto pb-20">{children}</main>
+          </DailyQuestShell>
           <BottomNav />
         </div>
       </body>

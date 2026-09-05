@@ -25,13 +25,14 @@ export function formatWorkoutSummary(exercises: WorkoutExercise[]): string {
 
 export function buildBookSummary(
   title: string,
-  reference: string | null
+  reference: string | null,
+  reflection?: string | null
 ): ActivitySummary {
   const subtitle = reference?.trim() ? reference.trim() : title;
   return {
     title,
     subtitle: reference?.trim() ? `${title} · ${reference.trim()}` : title,
-    reflection: null,
+    reflection: reflection?.trim() || null,
   };
 }
 

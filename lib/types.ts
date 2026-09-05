@@ -143,6 +143,7 @@ export type RecentActivityItem = {
   exercises?: WorkoutExercise[];
   createdAt: string;
   activityDate: string;
+  updatedAt?: string;
 };
 
 export type ActivitySummary = {

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import PageTransition from "@/components/PageTransition";
 import CategoryHistorySection from "@/components/CategoryHistorySection";
+import PageTransition from "@/components/PageTransition";
 import { ACTIVITY_ICONS, CATEGORY_LABELS } from "@/lib/activity-summary";
 import { getActivitiesByType } from "@/lib/db/activity-logs";
 import type { ProgressCategory } from "@/lib/types";
@@ -16,6 +16,8 @@ const VALID_CATEGORIES: ProgressCategory[] = [
 type CategoryPageProps = {
   params: Promise<{ category: string }>;
 };
+
+export const dynamic = "force-dynamic";
 
 export default async function CategoryHistoryPage({ params }: CategoryPageProps) {
   const { category } = await params;

@@ -178,6 +178,7 @@ function logToRecentItem(
     ...(exercises ? { exercises } : {}),
     createdAt: log.created_at,
     activityDate: log.activity_date,
+    updatedAt: log.updated_at,
   };
 }
 
@@ -212,7 +213,7 @@ export async function getRecentActivities(
       .select("*")
       .eq("user_id", DEFAULT_PLAYER_ID)
       .in("activity_type", FORM_ACTIVITY_TYPES)
-      .order("created_at", { ascending: false })
+      .order("updated_at", { ascending: false })
       .limit(fetchCount),
     supabase
       .from("coding_sessions")
@@ -234,9 +235,11 @@ export async function getRecentActivities(
     ...(codingResult.data ?? []).map(codingSessionToRecentItem),
   ];
 
-  merged.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+  merged.sort((a, b) => {
+    const aTime = new Date(a.updatedAt ?? a.createdAt).getTime();
+    const bTime = new Date(b.updatedAt ?? b.createdAt).getTime();
+    return bTime - aTime;
+  });
 
   return merged.slice(offset, offset + limit);
 }
@@ -267,7 +270,7 @@ export async function getActivitiesByType(
     .select("*")
     .eq("user_id", DEFAULT_PLAYER_ID)
     .eq("activity_type", category)
-    .order("created_at", { ascending: false })
+    .order("updated_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (error || !data) {
