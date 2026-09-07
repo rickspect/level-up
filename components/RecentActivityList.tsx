@@ -2,8 +2,10 @@ import {
   ACTIVITY_ICONS,
   formatWorkoutSummary,
 } from "@/lib/activity-summary";
+import LearningPointsList from "@/components/LearningPointsList";
 import { getTodayUtcDate } from "@/lib/player-utils";
-import type { RecentActivityItem } from "@/lib/types";
+import { parseLearningPoints } from "@/lib/learning-points";
+import type { ActivityType, RecentActivityItem } from "@/lib/types";
 
 type RecentActivityListProps = {
   activities: RecentActivityItem[];
@@ -29,24 +31,25 @@ function formatDayLabel(activityDate: string): string {
   );
 }
 
+function usesLearningPoints(activityType: ActivityType): boolean {
+  return activityType === "book" || activityType === "bible" || activityType === "coding";
+}
+
 function ActivityItem({ activity }: { activity: RecentActivityItem }) {
   const icon = ACTIVITY_ICONS[activity.activityType];
 
   let subtitle = activity.reference ?? "";
-  let detail = activity.reflection;
+  const learningPoints = parseLearningPoints(activity.reflection);
+  const showLearningPoints = usesLearningPoints(activity.activityType);
+  const workoutNotes =
+    activity.activityType === "workout" ? activity.reflection : null;
 
   if (activity.activityType === "bible") {
     subtitle = "";
-    detail = activity.reflection;
   }
 
   if (activity.activityType === "workout" && activity.exercises) {
     subtitle = formatWorkoutSummary(activity.exercises);
-    detail = activity.reflection;
-  }
-
-  if (activity.activityType === "coding") {
-    detail = activity.reflection;
   }
 
   return (
@@ -62,9 +65,12 @@ function ActivityItem({ activity }: { activity: RecentActivityItem }) {
           {subtitle && (
             <p className="mt-0.5 text-xs text-muted">{subtitle}</p>
           )}
-          {detail && (
-            <p className="mt-1 text-sm italic text-muted">
-              &ldquo;{detail}&rdquo;
+          {showLearningPoints && (
+            <LearningPointsList points={learningPoints} />
+          )}
+          {workoutNotes && (
+            <p className="mt-1 text-sm leading-[1.5] text-muted">
+              {workoutNotes}
             </p>
           )}
         </div>

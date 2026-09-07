@@ -1,22 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import LearningPointsInput, {
+  hasValidLearningPoints,
+} from "@/components/LearningPointsInput";
 import {
   inputClassName,
   primaryButtonClassName,
-  textareaClassName,
   formCardClassName,
 } from "@/components/QuestFormSheet";
+import {
+  getValidLearningPoints,
+  parseLearningPoints,
+} from "@/lib/learning-points";
 
 type ReadBibleFormProps = {
   initialPassage?: string;
   initialReflection?: string;
   mode: "create" | "edit";
   saving: boolean;
-  onSubmit: (data: { passage: string; reflection: string }) => void;
+  onSubmit: (data: { passage: string; reflection: string[] }) => void;
 };
-
-const MAX_REFLECTION_LENGTH = 300;
 
 export default function ReadBibleForm({
   initialPassage = "",
@@ -26,11 +30,22 @@ export default function ReadBibleForm({
   onSubmit,
 }: ReadBibleFormProps) {
   const [passage, setPassage] = useState(initialPassage);
-  const [reflection, setReflection] = useState(initialReflection);
+  const [points, setPoints] = useState<string[]>(() => {
+    const parsed = parseLearningPoints(initialReflection);
+    return parsed.length > 0 ? parsed : [""];
+  });
+
+  useEffect(() => {
+    const parsed = parseLearningPoints(initialReflection);
+    setPoints(parsed.length > 0 ? parsed : [""]);
+  }, [initialReflection]);
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    onSubmit({ passage, reflection });
+    onSubmit({
+      passage,
+      reflection: getValidLearningPoints(points),
+    });
   }
 
   return (
@@ -51,29 +66,18 @@ export default function ReadBibleForm({
           />
         </div>
 
-        <div className="flex flex-col gap-2">
-          <label htmlFor="bible-reflection" className="text-sm font-medium">
-            Reflection / What I Learned <span className="text-xp">*</span>
-          </label>
-          <textarea
-            id="bible-reflection"
-            value={reflection}
-            onChange={(event) =>
-              setReflection(event.target.value.slice(0, MAX_REFLECTION_LENGTH))
-            }
-            disabled={saving}
-            rows={4}
-            placeholder="What can you learn or apply from this passage?"
-            className={textareaClassName}
-          />
-          <span className="text-right text-xs text-muted">
-            {reflection.length}/{MAX_REFLECTION_LENGTH}
-          </span>
-        </div>
+        <LearningPointsInput
+          label="What I Learned"
+          idPrefix="bible-learning"
+          value={points}
+          onChange={setPoints}
+          saving={saving}
+          placeholder="What can you learn or apply from this passage?"
+        />
 
         <button
           type="submit"
-          disabled={saving || !passage.trim() || !reflection.trim()}
+          disabled={saving || !passage.trim() || !hasValidLearningPoints(points)}
           className={primaryButtonClassName}
         >
           {saving

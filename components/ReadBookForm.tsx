@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import LearningPointsInput, {
+  hasValidLearningPoints,
+} from "@/components/LearningPointsInput";
 import {
   inputClassName,
   primaryButtonClassName,
-  textareaClassName,
   formCardClassName,
 } from "@/components/QuestFormSheet";
+import {
+  getValidLearningPoints,
+  parseLearningPoints,
+} from "@/lib/learning-points";
 
 type ReadBookFormProps = {
   initialTitle?: string;
@@ -17,11 +23,9 @@ type ReadBookFormProps = {
   onSubmit: (data: {
     title: string;
     reference?: string;
-    reflection: string;
+    reflection: string[];
   }) => void;
 };
-
-const MAX_REFLECTION_LENGTH = 300;
 
 export default function ReadBookForm({
   initialTitle = "",
@@ -33,11 +37,23 @@ export default function ReadBookForm({
 }: ReadBookFormProps) {
   const [title, setTitle] = useState(initialTitle);
   const [reference, setReference] = useState(initialReference);
-  const [reflection, setReflection] = useState(initialReflection);
+  const [points, setPoints] = useState<string[]>(() => {
+    const parsed = parseLearningPoints(initialReflection);
+    return parsed.length > 0 ? parsed : [""];
+  });
+
+  useEffect(() => {
+    const parsed = parseLearningPoints(initialReflection);
+    setPoints(parsed.length > 0 ? parsed : [""]);
+  }, [initialReflection]);
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    onSubmit({ title, reference, reflection });
+    onSubmit({
+      title,
+      reference,
+      reflection: getValidLearningPoints(points),
+    });
   }
 
   return (
@@ -73,29 +89,18 @@ export default function ReadBookForm({
           />
         </div>
 
-        <div className="flex flex-col gap-2">
-          <label htmlFor="book-reflection" className="text-sm font-medium">
-            What I Learned <span className="text-xp">*</span>
-          </label>
-          <textarea
-            id="book-reflection"
-            value={reflection}
-            onChange={(event) =>
-              setReflection(event.target.value.slice(0, MAX_REFLECTION_LENGTH))
-            }
-            disabled={saving}
-            rows={4}
-            placeholder="What did you learn from this reading?"
-            className={textareaClassName}
-          />
-          <span className="text-right text-xs text-muted">
-            {reflection.length}/{MAX_REFLECTION_LENGTH}
-          </span>
-        </div>
+        <LearningPointsInput
+          label="Key Takeaways"
+          idPrefix="book-takeaway"
+          value={points}
+          onChange={setPoints}
+          saving={saving}
+          placeholder="What did you learn from this reading?"
+        />
 
         <button
           type="submit"
-          disabled={saving || !title.trim() || !reflection.trim()}
+          disabled={saving || !title.trim() || !hasValidLearningPoints(points)}
           className={primaryButtonClassName}
         >
           {saving

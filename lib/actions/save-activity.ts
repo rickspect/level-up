@@ -7,6 +7,10 @@ import {
   buildBookSummary,
   buildWorkoutSummary,
 } from "@/lib/activity-summary";
+import {
+  serializeLearningPoints,
+  validateLearningPoints,
+} from "@/lib/learning-points";
 import { getQuestById } from "@/lib/quests";
 import { createServerClient } from "@/lib/supabase/server";
 import type { SaveActivityResult, WorkoutExerciseInput } from "@/lib/types";
@@ -37,19 +41,27 @@ async function insertWorkoutExercises(
 export async function saveBookActivity(input: {
   title: string;
   reference?: string;
-  reflection: string;
+  reflection: string[];
 }): Promise<SaveActivityResult> {
   const title = input.title.trim();
   const reference = input.reference?.trim() || null;
-  const reflection = input.reflection.trim();
+  const validation = validateLearningPoints(input.reflection);
 
   if (!title) {
     return { success: false, error: "Book title is required" };
   }
 
-  if (!reflection) {
-    return { success: false, error: "What you learned is required" };
+  if (!validation.valid) {
+    return {
+      success: false,
+      error:
+        validation.error === "At least one learning point is required"
+          ? "At least one key takeaway is required"
+          : validation.error,
+    };
   }
+
+  const reflection = serializeLearningPoints(validation.points);
 
   const quest = getQuestById("read-book");
   if (!quest) {
@@ -73,7 +85,7 @@ export async function saveBookActivity(input: {
     player: result.player,
     reward: result.reward,
     activityType: result.activityType,
-    activitySummary: buildBookSummary(title, reference, reflection),
+    activitySummary: buildBookSummary(title, reference, validation.points),
     ...(result.levelUp ? { levelUp: result.levelUp } : {}),
     ...(result.perfectDay ? { perfectDay: result.perfectDay } : {}),
   };
@@ -81,18 +93,20 @@ export async function saveBookActivity(input: {
 
 export async function saveBibleActivity(input: {
   passage: string;
-  reflection: string;
+  reflection: string[];
 }): Promise<SaveActivityResult> {
   const passage = input.passage.trim();
-  const reflection = input.reflection.trim();
+  const validation = validateLearningPoints(input.reflection);
 
   if (!passage) {
     return { success: false, error: "Passage is required" };
   }
 
-  if (!reflection) {
+  if (!validation.valid) {
     return { success: false, error: "Reflection is required" };
   }
+
+  const reflection = serializeLearningPoints(validation.points);
 
   const quest = getQuestById("read-bible");
   if (!quest) {
@@ -116,7 +130,7 @@ export async function saveBibleActivity(input: {
     player: result.player,
     reward: result.reward,
     activityType: result.activityType,
-    activitySummary: buildBibleSummary(passage, reflection),
+    activitySummary: buildBibleSummary(passage, validation.points),
     ...(result.levelUp ? { levelUp: result.levelUp } : {}),
     ...(result.perfectDay ? { perfectDay: result.perfectDay } : {}),
   };

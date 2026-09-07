@@ -222,7 +222,7 @@ export function DailyQuestProvider({ children }: { children: ReactNode }) {
   async function handleBookSubmit(data: {
     title: string;
     reference?: string;
-    reflection: string;
+    reflection: string[];
   }) {
     setSaving(true);
     setError(null);
@@ -264,7 +264,7 @@ export function DailyQuestProvider({ children }: { children: ReactNode }) {
 
   async function handleBibleSubmit(data: {
     passage: string;
-    reflection: string;
+    reflection: string[];
   }) {
     setSaving(true);
     setError(null);

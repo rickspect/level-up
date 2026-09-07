@@ -2,20 +2,24 @@
 
 import { applyQuestReward } from "@/lib/actions/quest-rewards";
 import { getQuestById } from "@/lib/quests";
+import {
+  serializeLearningPoints,
+  validateLearningPoints,
+} from "@/lib/learning-points";
 import { createServerClient } from "@/lib/supabase/server";
 import type { CodingSession, FinishCodingSessionResult } from "@/lib/types";
 
 type FinishCodingSessionInput = {
   topic: string;
   durationMinutes: number;
-  learningNote: string;
+  learningPoints: string[];
 };
 
 export async function finishCodingSession(
   input: FinishCodingSessionInput
 ): Promise<FinishCodingSessionResult> {
   const topic = input.topic.trim();
-  const learningNote = input.learningNote.trim();
+  const validation = validateLearningPoints(input.learningPoints);
   const durationMinutes = Math.round(input.durationMinutes);
 
   if (!topic) {
@@ -26,9 +30,11 @@ export async function finishCodingSession(
     return { success: false, error: "Session must be at least 1 minute" };
   }
 
-  if (!learningNote) {
+  if (!validation.valid) {
     return { success: false, error: "Learning note is required" };
   }
+
+  const learningNote = serializeLearningPoints(validation.points);
 
   const supabase = createServerClient();
 

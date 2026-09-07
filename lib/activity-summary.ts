@@ -5,6 +5,7 @@ import type {
   WorkoutExercise,
   WorkoutExerciseInput,
 } from "@/lib/types";
+import { serializeLearningPoints, toLearningPoints } from "@/lib/learning-points";
 
 export function formatWorkoutExerciseSummary(
   exercise: Pick<WorkoutExercise, "exercise_name" | "sets" | "reps" | "weight">
@@ -26,24 +27,27 @@ export function formatWorkoutSummary(exercises: WorkoutExercise[]): string {
 export function buildBookSummary(
   title: string,
   reference: string | null,
-  reflection?: string | null
+  reflection?: string[] | string | null
 ): ActivitySummary {
+  const points = toLearningPoints(reflection);
   const subtitle = reference?.trim() ? reference.trim() : title;
   return {
     title,
     subtitle: reference?.trim() ? `${title} · ${reference.trim()}` : title,
-    reflection: reflection?.trim() || null,
+    reflection:
+      points.length > 0 ? serializeLearningPoints(points) : null,
   };
 }
 
 export function buildBibleSummary(
   passage: string,
-  reflection: string
+  reflection: string[] | string
 ): ActivitySummary {
+  const points = toLearningPoints(reflection);
   return {
     title: passage,
     subtitle: passage,
-    reflection,
+    reflection: points.length > 0 ? serializeLearningPoints(points) : null,
   };
 }
 

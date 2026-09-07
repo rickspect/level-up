@@ -2,6 +2,8 @@
 
 import { motion } from "motion/react";
 import { primaryButtonClassName } from "@/components/QuestFormSheet";
+import LearningPointsList from "@/components/LearningPointsList";
+import { parseLearningPoints } from "@/lib/learning-points";
 import type { ActivitySummary } from "@/lib/types";
 
 type QuestSuccessScreenProps = {
@@ -58,9 +60,10 @@ export default function QuestSuccessScreen({
         <p className="text-sm font-semibold text-foreground">{summary.title}</p>
         <p className="mt-1 text-sm text-muted">{summary.subtitle}</p>
         {summary.reflection && (
-          <p className="mt-2 text-sm italic text-muted">
-            &ldquo;{summary.reflection}&rdquo;
-          </p>
+          <LearningPointsList
+            points={parseLearningPoints(summary.reflection)}
+            className="mt-2"
+          />
         )}
       </div>
 

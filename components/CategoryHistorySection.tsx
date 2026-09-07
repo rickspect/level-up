@@ -7,13 +7,19 @@ import {
   CATEGORY_LABELS,
   formatWorkoutSummary,
 } from "@/lib/activity-summary";
-import type { ProgressCategory, RecentActivityItem } from "@/lib/types";
+import LearningPointsList from "@/components/LearningPointsList";
+import { parseLearningPoints } from "@/lib/learning-points";
+import type { ActivityType, ProgressCategory, RecentActivityItem } from "@/lib/types";
 
 type CategoryHistorySectionProps = {
   category: ProgressCategory;
   initialActivities: RecentActivityItem[];
   pageSize?: number;
 };
+
+function usesLearningPoints(activityType: ActivityType): boolean {
+  return activityType === "book" || activityType === "bible" || activityType === "coding";
+}
 
 function HistoryItem({ activity }: { activity: RecentActivityItem }) {
   const dateLabel = new Date(
@@ -54,9 +60,16 @@ function HistoryItem({ activity }: { activity: RecentActivityItem }) {
         </p>
       )}
 
-      {activity.reflection && (
-        <p className="mt-2 text-sm italic text-muted">
-          &ldquo;{activity.reflection}&rdquo;
+      {usesLearningPoints(activity.activityType) && (
+        <LearningPointsList
+          points={parseLearningPoints(activity.reflection)}
+          className="mt-2"
+        />
+      )}
+
+      {activity.activityType === "workout" && activity.reflection && (
+        <p className="mt-2 text-sm leading-[1.5] text-muted">
+          {activity.reflection}
         </p>
       )}
     </div>

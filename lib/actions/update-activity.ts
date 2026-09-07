@@ -5,6 +5,10 @@ import {
   buildBookSummary,
   buildWorkoutSummary,
 } from "@/lib/activity-summary";
+import {
+  serializeLearningPoints,
+  validateLearningPoints,
+} from "@/lib/learning-points";
 import { revalidateActivityPages } from "@/lib/actions/revalidate-progress";
 import { getActivityByTypeToday } from "@/lib/db/activity-logs";
 import { createServerClient } from "@/lib/supabase/server";
@@ -100,19 +104,27 @@ async function replaceWorkoutExercises(
 export async function updateBookActivity(input: {
   title: string;
   reference?: string;
-  reflection: string;
+  reflection: string[];
 }): Promise<UpdateActivityResult> {
   const title = input.title.trim();
   const reference = input.reference?.trim() || null;
-  const reflection = input.reflection.trim();
+  const validation = validateLearningPoints(input.reflection);
 
   if (!title) {
     return { success: false, error: "Book title is required" };
   }
 
-  if (!reflection) {
-    return { success: false, error: "What you learned is required" };
+  if (!validation.valid) {
+    return {
+      success: false,
+      error:
+        validation.error === "At least one learning point is required"
+          ? "At least one key takeaway is required"
+          : validation.error,
+    };
   }
+
+  const reflection = serializeLearningPoints(validation.points);
 
   const existing = await getActivityByTypeToday("book");
   if (!existing) {
@@ -167,18 +179,20 @@ export async function updateBookActivity(input: {
 
 export async function updateBibleActivity(input: {
   passage: string;
-  reflection: string;
+  reflection: string[];
 }): Promise<UpdateActivityResult> {
   const passage = input.passage.trim();
-  const reflection = input.reflection.trim();
+  const validation = validateLearningPoints(input.reflection);
 
   if (!passage) {
     return { success: false, error: "Passage is required" };
   }
 
-  if (!reflection) {
+  if (!validation.valid) {
     return { success: false, error: "Reflection is required" };
   }
+
+  const reflection = serializeLearningPoints(validation.points);
 
   const existing = await getActivityByTypeToday("bible");
   if (!existing) {

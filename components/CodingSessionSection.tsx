@@ -10,7 +10,11 @@ import type {
   Player,
 } from "@/lib/types";
 import CodingThisWeek from "@/components/CodingThisWeek";
+import LearningPointsInput, {
+  hasValidLearningPoints,
+} from "@/components/LearningPointsInput";
 import { useDailyQuest } from "@/components/DailyQuestProvider";
+import { getValidLearningPoints } from "@/lib/learning-points";
 import FloatingReward from "@/components/FloatingReward";
 import LevelUpOverlay from "@/components/LevelUpOverlay";
 import PerfectDayOverlay from "@/components/PerfectDayOverlay";
@@ -48,7 +52,7 @@ export default function CodingSessionSection({
   const [topic, setTopic] = useState("");
   const [goalMinutes, setGoalMinutes] = useState<number>(25);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [learningNote, setLearningNote] = useState("");
+  const [learningPoints, setLearningPoints] = useState<string[]>([""]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -123,13 +127,14 @@ export default function CodingSessionSection({
   function resetSession() {
     setPhase("idle");
     setTopic("");
-    setLearningNote("");
+    setLearningPoints([""]);
     setElapsedSeconds(0);
     startTimeRef.current = null;
   }
 
   async function handleSubmitFinish() {
-    if (!learningNote.trim()) {
+    const cleanedPoints = getValidLearningPoints(learningPoints);
+    if (cleanedPoints.length === 0) {
       setError("Write what you learned before finishing");
       return;
     }
@@ -141,7 +146,7 @@ export default function CodingSessionSection({
     const result = await finishCodingSession({
       topic: topic.trim(),
       durationMinutes,
-      learningNote: learningNote.trim(),
+      learningPoints: cleanedPoints,
     });
 
     setSaving(false);
@@ -299,20 +304,14 @@ export default function CodingSessionSection({
         </div>
 
         {isFinishing && (
-          <div className="flex flex-col gap-2">
-            <label htmlFor="learning-note" className="text-sm font-medium">
-              What did you learn?
-            </label>
-            <textarea
-              id="learning-note"
-              value={learningNote}
-              onChange={(event) => setLearningNote(event.target.value)}
-              disabled={saving}
-              rows={3}
-              placeholder="Summarize what you practiced or discovered..."
-              className="resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-60"
-            />
-          </div>
+          <LearningPointsInput
+            label="What did you learn?"
+            idPrefix="coding-learning"
+            value={learningPoints}
+            onChange={setLearningPoints}
+            saving={saving}
+            placeholder="Summarize what you practiced or discovered..."
+          />
         )}
 
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -350,7 +349,7 @@ export default function CodingSessionSection({
               <button
                 type="button"
                 onClick={handleSubmitFinish}
-                disabled={saving || !learningNote.trim()}
+                disabled={saving || !hasValidLearningPoints(learningPoints)}
                 className="flex-1 rounded-lg border border-gold/40 bg-gold/10 px-4 py-2.5 text-sm font-semibold text-gold-light transition-colors hover:bg-gold/20 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {saving ? "Saving..." : "Save Session"}
