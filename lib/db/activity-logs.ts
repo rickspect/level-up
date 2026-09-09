@@ -5,8 +5,9 @@ import {
 } from "@/lib/activity-summary";
 import { getDefaultPlayer } from "@/lib/db/player";
 import {
-  getStartOfWeekUtc,
-  getTodayUtcDate,
+  getStartOfWeek,
+  getTodayDate,
+  getWeekStartDate,
 } from "@/lib/player-utils";
 import { createServerClient } from "@/lib/supabase/server";
 import type {
@@ -53,7 +54,7 @@ export async function getTodayActivitySummaries(): Promise<
   TodayActivitySummary[]
 > {
   const supabase = createServerClient();
-  const today = getTodayUtcDate();
+  const today = getTodayDate();
 
   const { data, error } = await supabase
     .from("activity_logs")
@@ -95,7 +96,7 @@ export async function getActivityByTypeToday(
   activityType: ActivityType
 ): Promise<(ActivityLog & { exercises?: WorkoutExercise[] }) | null> {
   const supabase = createServerClient();
-  const today = getTodayUtcDate();
+  const today = getTodayDate();
 
   const { data, error } = await supabase
     .from("activity_logs")
@@ -124,7 +125,8 @@ export async function getActivityByTypeToday(
 
 export async function getWeeklyProgressStats(): Promise<WeeklyProgressStats> {
   const supabase = createServerClient();
-  const startOfWeek = getStartOfWeekUtc();
+  const weekStartDate = getWeekStartDate();
+  const startOfWeek = getStartOfWeek();
   const player = await getDefaultPlayer();
 
   const [bookResult, bibleResult, workoutResult, codingResult] =
@@ -134,19 +136,19 @@ export async function getWeeklyProgressStats(): Promise<WeeklyProgressStats> {
         .select("activity_date")
         .eq("user_id", DEFAULT_PLAYER_ID)
         .eq("activity_type", "book")
-        .gte("activity_date", startOfWeek.slice(0, 10)),
+        .gte("activity_date", weekStartDate),
       supabase
         .from("activity_logs")
         .select("activity_date")
         .eq("user_id", DEFAULT_PLAYER_ID)
         .eq("activity_type", "bible")
-        .gte("activity_date", startOfWeek.slice(0, 10)),
+        .gte("activity_date", weekStartDate),
       supabase
         .from("activity_logs")
         .select("activity_date")
         .eq("user_id", DEFAULT_PLAYER_ID)
         .eq("activity_type", "workout")
-        .gte("activity_date", startOfWeek.slice(0, 10)),
+        .gte("activity_date", weekStartDate),
       supabase
         .from("coding_sessions")
         .select("id")

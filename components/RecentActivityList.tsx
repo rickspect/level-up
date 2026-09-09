@@ -3,7 +3,11 @@ import {
   formatWorkoutSummary,
 } from "@/lib/activity-summary";
 import LearningPointsList from "@/components/LearningPointsList";
-import { getTodayUtcDate } from "@/lib/player-utils";
+import {
+  APP_TIMEZONE,
+  getTodayDate,
+  getYesterdayDate,
+} from "@/lib/player-utils";
 import { parseLearningPoints } from "@/lib/learning-points";
 import type { ActivityType, RecentActivityItem } from "@/lib/types";
 
@@ -12,10 +16,8 @@ type RecentActivityListProps = {
 };
 
 function formatDayLabel(activityDate: string): string {
-  const today = getTodayUtcDate();
-  const yesterdayDate = new Date(`${today}T00:00:00.000Z`);
-  yesterdayDate.setUTCDate(yesterdayDate.getUTCDate() - 1);
-  const yesterday = yesterdayDate.toISOString().slice(0, 10);
+  const today = getTodayDate();
+  const yesterday = getYesterdayDate();
 
   if (activityDate === today) {
     return "Today";
@@ -25,9 +27,9 @@ function formatDayLabel(activityDate: string): string {
     return "Yesterday";
   }
 
-  return new Date(`${activityDate}T00:00:00.000Z`).toLocaleDateString(
+  return new Date(`${activityDate}T00:00:00+07:00`).toLocaleDateString(
     "en-US",
-    { month: "short", day: "numeric", timeZone: "UTC" }
+    { month: "short", day: "numeric", timeZone: APP_TIMEZONE }
   );
 }
 

@@ -9,6 +9,7 @@ import {
 } from "@/lib/activity-summary";
 import LearningPointsList from "@/components/LearningPointsList";
 import { parseLearningPoints } from "@/lib/learning-points";
+import { APP_TIMEZONE } from "@/lib/player-utils";
 import type { ActivityType, ProgressCategory, RecentActivityItem } from "@/lib/types";
 
 type CategoryHistorySectionProps = {
@@ -23,12 +24,12 @@ function usesLearningPoints(activityType: ActivityType): boolean {
 
 function HistoryItem({ activity }: { activity: RecentActivityItem }) {
   const dateLabel = new Date(
-    `${activity.activityDate}T00:00:00.000Z`
+    `${activity.activityDate}T00:00:00+07:00`
   ).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone: APP_TIMEZONE,
   });
 
   return (

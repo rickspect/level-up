@@ -6,9 +6,9 @@ import {
   applyBonusRewards,
   applyRewards,
   computeStreakAfterFirstQuestOfDay,
-  getStartOfTodayUtc,
-  getStartOfYesterdayUtc,
-  getTodayUtcDate,
+  getStartOfToday,
+  getStartOfYesterday,
+  getTodayDate,
   isPerfectDayComplete,
   PERFECT_DAY_BONUS,
 } from "@/lib/player-utils";
@@ -49,8 +49,8 @@ export async function applyQuestReward(
   options: ApplyQuestRewardOptions = {}
 ): Promise<ApplyQuestRewardResult> {
   const supabase = createServerClient();
-  const startOfToday = getStartOfTodayUtc();
-  const today = getTodayUtcDate();
+  const startOfToday = getStartOfToday();
+  const today = getTodayDate();
 
   const { data: existingLog } = await supabase
     .from("activity_logs")
@@ -94,7 +94,7 @@ export async function applyQuestReward(
     const { data: yesterdayLogs } = await supabase
       .from("activity_logs")
       .select("id")
-      .gte("created_at", getStartOfYesterdayUtc())
+      .gte("created_at", getStartOfYesterday())
       .lt("created_at", startOfToday)
       .limit(1);
 

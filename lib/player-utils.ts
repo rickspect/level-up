@@ -82,29 +82,85 @@ export function toPlayerStatsData(player: Player): PlayerStatsData {
   };
 }
 
-export function getStartOfTodayUtc(): string {
-  const now = new Date();
-  const start = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-  );
-  return start.toISOString();
+export const APP_TIMEZONE = "Asia/Jakarta";
+
+const JAKARTA_OFFSET = "+07:00";
+
+const JAKARTA_WEEKDAY_MAP: Record<string, number> = {
+  Sun: 0,
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thu: 4,
+  Fri: 5,
+  Sat: 6,
+};
+
+function getJakartaDayOfWeek(date: Date = new Date()): number {
+  const dayName = new Intl.DateTimeFormat("en-US", {
+    timeZone: APP_TIMEZONE,
+    weekday: "short",
+  }).format(date);
+
+  return JAKARTA_WEEKDAY_MAP[dayName] ?? 0;
 }
 
-export function getTodayUtcDate(): string {
-  const now = new Date();
-  const year = now.getUTCFullYear();
-  const month = String(now.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(now.getUTCDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+function shiftJakartaDate(dateStr: string, days: number): string {
+  const base = new Date(`${dateStr}T12:00:00${JAKARTA_OFFSET}`);
+  base.setUTCDate(base.getUTCDate() + days);
+
+  return new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIMEZONE }).format(
+    base
+  );
 }
 
-export function getStartOfYesterdayUtc(): string {
-  const now = new Date();
-  const start = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1)
-  );
-  return start.toISOString();
+function getStartOfDayIso(dateStr: string): string {
+  return new Date(`${dateStr}T00:00:00${JAKARTA_OFFSET}`).toISOString();
 }
+
+export function getTodayDate(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIMEZONE }).format(
+    new Date()
+  );
+}
+
+export function getYesterdayDate(): string {
+  return shiftJakartaDate(getTodayDate(), -1);
+}
+
+export function getStartOfToday(): string {
+  return getStartOfDayIso(getTodayDate());
+}
+
+export function getStartOfYesterday(): string {
+  return getStartOfDayIso(getYesterdayDate());
+}
+
+export function getWeekStartDate(): string {
+  const today = getTodayDate();
+  const dayOfWeek = getJakartaDayOfWeek();
+  const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+
+  return shiftJakartaDate(today, -daysFromMonday);
+}
+
+export function getMsUntilNextMidnight(): number {
+  const todayMidnight = new Date(`${getTodayDate()}T00:00:00${JAKARTA_OFFSET}`);
+  const tomorrowMidnight = new Date(
+    todayMidnight.getTime() + 24 * 60 * 60 * 1000
+  );
+
+  return Math.max(0, tomorrowMidnight.getTime() - Date.now());
+}
+
+/** @deprecated Use getTodayDate */
+export const getTodayUtcDate = getTodayDate;
+
+/** @deprecated Use getStartOfToday */
+export const getStartOfTodayUtc = getStartOfToday;
+
+/** @deprecated Use getStartOfYesterday */
+export const getStartOfYesterdayUtc = getStartOfYesterday;
 
 export function computeStreakAfterFirstQuestOfDay(
   currentStreak: number,
@@ -117,16 +173,9 @@ export function computeStreakAfterFirstQuestOfDay(
   return 1;
 }
 
-export function getStartOfWeekUtc(): string {
-  const now = new Date();
-  const day = now.getUTCDay();
-  const daysFromMonday = day === 0 ? 6 : day - 1;
-  const start = new Date(
-    Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate() - daysFromMonday
-    )
-  );
-  return start.toISOString();
+export function getStartOfWeek(): string {
+  return getStartOfDayIso(getWeekStartDate());
 }
+
+/** @deprecated Use getStartOfWeek */
+export const getStartOfWeekUtc = getStartOfWeek;

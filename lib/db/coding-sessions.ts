@@ -1,4 +1,4 @@
-import { getStartOfWeekUtc } from "@/lib/player-utils";
+import { getStartOfWeek } from "@/lib/player-utils";
 import { createServerClient } from "@/lib/supabase/server";
 import type { CodingSession, CodingWeekStats } from "@/lib/types";
 
@@ -6,7 +6,7 @@ const TECH_STAT_PER_QUEST = 3;
 
 export async function getCodingWeekStats(): Promise<CodingWeekStats> {
   const supabase = createServerClient();
-  const startOfWeek = getStartOfWeekUtc();
+  const startOfWeek = getStartOfWeek();
 
   const [sessionsResult, logsResult] = await Promise.all([
     supabase

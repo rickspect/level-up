@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useRef,
   useState,
   type ReactNode,
@@ -20,6 +21,7 @@ import {
   updateWorkoutActivity,
 } from "@/lib/actions/update-activity";
 import { dailyQuests, QUEST_FORM_META } from "@/lib/quests";
+import { getMsUntilNextMidnight } from "@/lib/player-utils";
 import type {
   ActivitySummary,
   ActivityType,
@@ -104,19 +106,30 @@ export function DailyQuestProvider({ children }: { children: ReactNode }) {
 
   const hydrate = useCallback(
     (completed: ActivityType[], summaries: TodayActivitySummary[]) => {
-      setCompletedActivityTypes((prev) => new Set([...prev, ...completed]));
-      setTodaySummaries((prev) => {
-        const next = new Map(prev);
-        for (const summary of summaries) {
-          if (!next.has(summary.activityType)) {
-            next.set(summary.activityType, summary);
-          }
-        }
-        return next;
-      });
+      setCompletedActivityTypes(new Set(completed));
+      setTodaySummaries(
+        new Map(summaries.map((summary) => [summary.activityType, summary]))
+      );
     },
     []
   );
+
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const scheduleMidnightRefresh = () => {
+      timeoutId = setTimeout(() => {
+        setCompletedActivityTypes(new Set());
+        setTodaySummaries(new Map());
+        router.refresh();
+        scheduleMidnightRefresh();
+      }, getMsUntilNextMidnight());
+    };
+
+    scheduleMidnightRefresh();
+
+    return () => clearTimeout(timeoutId);
+  }, [router]);
 
   const markCompleted = useCallback(
     (activityType: ActivityType, questId?: QuestId) => {
