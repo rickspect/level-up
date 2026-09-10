@@ -7,6 +7,8 @@ import { getTodayActivitySummaries } from "@/lib/db/activity-logs";
 import { getCodingWeekStats } from "@/lib/db/coding-sessions";
 import { getDefaultPlayer, getTodayCompletedActivityTypes } from "@/lib/db/player";
 
+export const dynamic = "force-dynamic";
+
 export default async function QuestsPage() {
   const [player, weekStats, completedActivityTypes, todaySummaries] =
     await Promise.all([

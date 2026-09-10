@@ -8,6 +8,8 @@ import {
   getTodayCompletedActivityTypes,
 } from "@/lib/db/player";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const player = await getDefaultPlayer();
   const [completedActivityTypes, todaySummaries] = await Promise.all([

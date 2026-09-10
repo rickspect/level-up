@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidateActivityPages } from "@/lib/actions/revalidate-progress";
 import { applyQuestReward } from "@/lib/actions/quest-rewards";
 import { getQuestById } from "@/lib/quests";
 import {
@@ -63,6 +64,7 @@ export async function finishCodingSession(
 
   if (!rewardResult.success) {
     if (rewardResult.error === "Already completed today") {
+      revalidateActivityPages("coding");
       return {
         success: true,
         session,
@@ -72,6 +74,8 @@ export async function finishCodingSession(
 
     return { success: false, error: rewardResult.error };
   }
+
+  revalidateActivityPages("coding");
 
   return {
     success: true,
